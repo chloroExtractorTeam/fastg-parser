@@ -16,15 +16,27 @@ while (<FH>)
     next unless (/^>/);
 
     # extract Node information
-    while ($_ =~ /(NODE_[^:;,]+)/g)
+    my @nodes = $_ =~ /(NODE_[^:;,]+)/g;
+
+    foreach my $node (@nodes)
     {
 
-	my $nodename = $1;
+	my $nodename = $node;
 	# estimate node basename
 
 	my $nodebasename = $nodename;
 	$nodename=~s/'$//; # delete a ' if necessary
+	my $rev_nodename = $nodebasename."'";
+
+	# check if the node is known
+	unless ($g->has_vertex($nodebasename))
+	{
+	    $g->add_edge($nodebasename, $rev_nodename);
+	    $g->add_edge($rev_nodename, $nodebasename);	    
+	}
     }
 }
+
+print "$g";
 
 close(FH) || die "Unable to close file '$infile'\n";
