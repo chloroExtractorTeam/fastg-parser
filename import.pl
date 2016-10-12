@@ -16,7 +16,7 @@ while (<FH>)
     next unless (/^>/);
 
     # extract Node information
-    my @nodes = $_ =~ /(NODE_[^:;,]+)/g;
+    my @nodes = $_ =~ /(EDGE_[^:;,]+)/g;
 
     foreach my $node (@nodes)
     {
