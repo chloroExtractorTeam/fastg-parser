@@ -48,7 +48,7 @@ while (<FH>)
 	}
 
 	# if digraph information are given, store them
-	push(@digraphs, { from => $seqname, from_rev => $reverse, to => \@digraph });
+	push(@digraphs, { from => $seqname, from_rev => $reverse, to => \@digraph }) if (@digraph);
 
 	# sequence already known?
 	unless (exists $names{$seqname})
