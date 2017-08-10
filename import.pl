@@ -116,7 +116,7 @@ foreach my $name (keys %names)
 {
     $seqlen += length($seq[$names{$name}]);
 }
-printf STDERR "Found %d different nodes with %d bp total sequence length\n", (keys %names)+0, $seqlen;
+printf STDERR "Found %d different nodes with %d bp total sequence length and %d digraph information packages\n", (keys %names)+0, $seqlen, @digraphs+0;
 
 foreach my $v ($g->vertices)
 {
