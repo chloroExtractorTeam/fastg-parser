@@ -107,6 +107,13 @@ while (<FH>)
     # }
 }
 
+my $seqlen = 0;
+foreach my $name (keys %names)
+{
+    $seqlen += length($seq[$names{$name}]);
+}
+printf STDERR "Found %d different nodes with %d bp total sequence length\n", (keys %names)+0, $seqlen;
+
 foreach my $v ($g->vertices)
 {
     #print STDERR "Vertices: $v\n";
