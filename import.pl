@@ -4,71 +4,62 @@ use strict;
 use warnings;
 
 use Graph;
-#use Graph::Directed;
-#use Graph::Subgraph;
 
 my $infile = $ARGV[0];
 
 my $g = Graph->new(directed => 1);
 
+my %names = ();
+my @seq = ();
+my $lastname = "";
+
 open(FH, "<", $infile) || die "Unable to open file '$infile'\n";
 
 while (<FH>)
 {
-    next unless (/^>/);
-
     my $line = $_;
+
+    next unless ($line =~ /^>/ || $lastname);
 
     chomp($line);
 
-    # delete a ; if necessary
-    $line =~ s/;$//;
-    # delete the leading >
-    $line =~ s/^>//;
-
-    # extract Node information
-    my @nodes = $line =~ /((?:EDGE|NODE)_[^:;,]+)/g;
-
-    foreach my $node (@nodes)
+    if ($line =~ /^>/)
     {
+	# delete a ; if necessary
+	$line =~ s/;$//;
+	# delete the leading >
+	$line =~ s/^>//;
 
-	my $nodename = $node;
-	# estimate node basename
+	# check if sequence contains a digraph
+	my ($seqname, @digraph) = split(/:/, $line);
 
-	my $nodebasename = $nodename;
-	$nodebasename =~ s/\'//g;
-	my $rev_nodename = $nodebasename."'";
-
-	# check if the node is known
-	unless ($g->has_vertex($nodebasename))
+	if (@digraph)
 	{
-	    $g->add_edge($nodebasename, $rev_nodename);
-	    $g->add_edge($rev_nodename, $nodebasename);
-	    print STDERR "Created Node: $node ($nodebasename)\n";
-	}
-    }
-
-    # do we have a graph?
-    if ($line =~ /:/)
-    {
-	@nodes = split(/:/, $line);
-	if (@nodes != 2)
-	{
-	    die "Something went wrong";
-	}
-	my ($from, $to) = @nodes;
-
-	# check if $to contains more than one node (delimeter would be an ,)
-	my @to_nodes = ($to);
-	if ($to =~ /,/)
-	{
-	    @to_nodes = split(/,/, $to);
+	    @digraph = split(/,/, join(",", @digraph));
 	}
 
-	foreach my $to_node (@to_nodes)
+	# does the seqname contain a ' to indicate the reverse complement?
+	my $reverse = 0; # assume non reverse sequence
+	if ($seqname =~ /'/)
 	{
-	    $g->add_edge($from, $to_node);
+	    $reverse = 1;
+	    $seqname =~ s/'//g;
 	}
+
+	# sequence already known?
+	unless (exists $names{$seqname})
+	{
+	    $lastname = $seqname;
+
+	    push(@seq, "");
+	    $names{$seqname} = @seq-1;
+	} else {
+	    # in case the sequence is already known
+	    $lastname = undef;
+	}
+
+    } else {
+	$seq[$names{$lastname}] .= $line;
     }
 }
 
