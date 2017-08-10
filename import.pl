@@ -61,6 +61,50 @@ while (<FH>)
     } else {
 	$seq[$names{$lastname}] .= $line;
     }
+    # 	# extract Node information
+    # 	my @nodes = $line =~ /((?:EDGE|NODE)_[^:;,]+)/g;
+
+    # 	foreach my $node (@nodes)
+    # 	{
+
+    # 	    my $nodename = $node;
+    # 	    # estimate node basename
+
+    # 	    my $nodebasename = $nodename;
+    # 	    $nodebasename =~ s/\'//g;
+    # 	    my $rev_nodename = $nodebasename."'";
+
+    # 	    # check if the node is known
+    # 	    unless ($g->has_vertex($nodebasename))
+    # 	    {
+    # 		$g->add_edge($nodebasename, $rev_nodename);
+    # 		$g->add_edge($rev_nodename, $nodebasename);
+    # 		print STDERR "Created Node: $node ($nodebasename)\n";
+    # 	    }
+    # 	}
+
+    # # do we have a graph?
+    # if ($line =~ /:/)
+    # {
+    # 	@nodes = split(/:/, $line);
+    # 	if (@nodes != 2)
+    # 	{
+    # 	    die "Something went wrong";
+    # 	}
+    # 	my ($from, $to) = @nodes;
+
+    # 	# check if $to contains more than one node (delimeter would be an ,)
+    # 	my @to_nodes = ($to);
+    # 	if ($to =~ /,/)
+    # 	{
+    # 	    @to_nodes = split(/,/, $to);
+    # 	}
+
+    # 	foreach my $to_node (@to_nodes)
+    # 	{
+    # 	    $g->add_edge($from, $to_node);
+    # 	}
+    # }
 }
 
 foreach my $v ($g->vertices)
