@@ -11,6 +11,7 @@ my $g = Graph->new(directed => 1);
 
 my %names = ();
 my @seq = ();
+my @digraphs = ();
 my $lastname = "";
 
 open(FH, "<", $infile) || die "Unable to open file '$infile'\n";
@@ -45,6 +46,9 @@ while (<FH>)
 	    $reverse = 1;
 	    $seqname =~ s/'//g;
 	}
+
+	# if digraph information are given, store them
+	push(@digraphs, { from => $seqname, from_rev => $reverse, to => \@digraph });
 
 	# sequence already known?
 	unless (exists $names{$seqname})
