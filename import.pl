@@ -65,6 +65,56 @@ while (<FH>)
     } else {
 	$seq[$names{$lastname}] .= $line;
     }
+}
+
+# build graph information
+foreach my $digraph (@digraphs)
+{
+    # create the starting node
+    unless (exists $names{$digraph->{from}})
+    {
+	die "Unable to find the node '$digraph->{from}'\n";
+    }
+    my $from_node = $names{$digraph->{from}};
+    $from_node .= "'" if ($digraph->{from_rev});
+
+    # create the starting vertex
+    unless ($g->has_vertex($from_node))
+    {
+	$g->add_vertex($from_node);
+    }
+
+    for (my $i = 0; $i < @{$digraph->{to}}; $i++)
+    {
+	my $connected_node = $digraph->{to}[$i];
+	my $reverse = 0;
+
+	if ($connected_node =~ /'/)
+	{
+	    $reverse = 1;
+	    $connected_node =~ s/'//g;
+	}
+
+	# the node need to exist
+	unless (exists $names{$connected_node})
+	{
+	    die "Unable to find the node '$connected_node'\n";
+	}
+
+	my $node = $names{$connected_node};
+	$node .= "'" if ($reverse);
+
+	# create the vertex
+	unless ($g->has_vertex($node))
+	{
+	    $g->add_vertex($node);
+	}
+
+	# and the edge
+	$g->add_edge($from_node, $node);
+    }
+}
+
     # 	# extract Node information
     # 	my @nodes = $line =~ /((?:EDGE|NODE)_[^:;,]+)/g;
 
@@ -109,7 +159,7 @@ while (<FH>)
     # 	    $g->add_edge($from, $to_node);
     # 	}
     # }
-}
+
 
 my $seqlen = 0;
 foreach my $name (keys %names)
