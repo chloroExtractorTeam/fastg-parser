@@ -181,11 +181,20 @@ foreach my $wcc (@all_weakly_connected_components)
 {
     #print STDERR Dumper($wcc); use Data::Dumper;
 
-    next if (@{$wcc} == 2);
+    next if (@{$wcc} <3 );
 
     my $c = subgraph($g, @{$wcc});
 
-    next unless ($c->is_cyclic && $c->vertices > 2);
+    my @V = $c->vertices();
+
+    my $seqlen = 0;
+    foreach my $pos (@V)
+    {
+	$pos =~ s/'//;
+	$seqlen += length($seq[$pos]);
+    }
+
+    next unless ($c->is_cyclic && $c->vertices > 4 && $seqlen > 50000);
 
 #    print Dumper($wcc); use Data::Dumper;
 
