@@ -173,7 +173,11 @@ foreach my $v ($g->vertices)
     #print STDERR "Vertices: $v\n";
 }
 
-foreach my $wcc ($g->weakly_connected_components())
+my @all_weakly_connected_components = $g->weakly_connected_components();
+
+printf STDERR "Found %d weakly connected components\n", @all_weakly_connected_components+0;
+
+foreach my $wcc (@all_weakly_connected_components)
 {
     #print STDERR Dumper($wcc); use Data::Dumper;
 
