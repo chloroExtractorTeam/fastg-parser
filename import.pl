@@ -4,6 +4,7 @@ use strict;
 use warnings;
 
 use Graph;
+use Term::ProgressBar;
 
 my $infile = $ARGV[0];
 
@@ -185,9 +186,16 @@ my @all_weakly_connected_components = $g->weakly_connected_components();
 
 printf STDERR "Found %d weakly connected components\n", @all_weakly_connected_components+0;
 
-foreach my $wcc (@all_weakly_connected_components)
+my $max = @all_weakly_connected_components+0;
+my $progress = Term::ProgressBar->new({name => 'WCC', count => $max, remove => 1});
+$progress->minor(0);
+my $next_update = 0;
+
+for(my $i = 0;  $i < @all_weakly_connected_components+0; $i++)
 {
-    #print STDERR Dumper($wcc); use Data::Dumper;
+    $next_update = $progress->update($i) if $i >= $next_update;
+
+    my $wcc = $all_weakly_connected_components[$i];
 
     next if (@{$wcc} < $MINNODES || @{$wcc} > $MAXNODES);
 
@@ -209,7 +217,7 @@ foreach my $wcc (@all_weakly_connected_components)
     print "$c", "\n";
 }
 
-#print $g;
+$progress->update($max) if $max >= $next_update;
 
 close(FH) || die "Unable to close file '$infile'\n";
 
