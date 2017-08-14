@@ -189,7 +189,7 @@ my @all_weakly_connected_components = $g->weakly_connected_components();
 printf STDERR "Found %d weakly connected components\n", @all_weakly_connected_components+0;
 
 my $max = @all_weakly_connected_components+0;
-my $progress = Term::ProgressBar->new({name => 'WCC', count => $max, remove => 1});
+my $progress = Term::ProgressBar->new({name => 'WCC', count => $max, remove => 1, ETA   => 'linear'});
 $progress->minor(0);
 my $next_update = 0;
 
