@@ -15,6 +15,12 @@ my @digraphs = ();
 my %seq2seqname = ();
 my $lastname = "";
 
+my $MINNODES = 3;
+my $MAXNODES = 100;
+my $MINSEQLEN = 25000;
+my $MAXSEQLEN = 1000000;
+
+
 open(FH, "<", $infile) || die "Unable to open file '$infile'\n";
 
 while (<FH>)
@@ -183,7 +189,7 @@ foreach my $wcc (@all_weakly_connected_components)
 {
     #print STDERR Dumper($wcc); use Data::Dumper;
 
-    next if (@{$wcc} <3 );
+    next if (@{$wcc} < $MINNODES || @{$wcc} > $MAXNODES);
 
     my $c = subgraph($g, @{$wcc});
 
@@ -196,7 +202,7 @@ foreach my $wcc (@all_weakly_connected_components)
 	$seqlen += length($seq[$pos]);
     }
 
-    next unless ($c->is_cyclic && $c->vertices > 4 && $seqlen > 50000);
+    next unless ($c->is_cyclic && $seqlen >= $MINSEQLEN && $seqlen <= $MAXSEQLEN);
 
 #    print Dumper($wcc); use Data::Dumper;
 
