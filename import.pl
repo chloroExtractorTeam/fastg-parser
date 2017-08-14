@@ -76,6 +76,8 @@ while (<FH>)
     }
 }
 
+close(FH) || die "Unable to close file '$infile'\n";
+
 # build graph information
 foreach my $digraph (@digraphs)
 {
@@ -218,8 +220,6 @@ for(my $i = 0;  $i < @all_weakly_connected_components+0; $i++)
 }
 
 $progress->update($max) if $max >= $next_update;
-
-close(FH) || die "Unable to close file '$infile'\n";
 
 # from http://stackoverflow.com/questions/8729302/creating-a-subgraph-of-a-graph-induced-by-node-list
 
