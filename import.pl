@@ -214,9 +214,33 @@ for(my $i = 0;  $i < @all_weakly_connected_components+0; $i++)
 
     next unless ($c->is_cyclic && $seqlen >= $MINSEQLEN && $seqlen <= $MAXSEQLEN);
 
-#    print Dumper($wcc); use Data::Dumper;
+    # blast
+    my %seen = ();
+    foreach (@{$wcc})
+    {
+	$_ =~ s/'//g;
 
-    print "$c", "\n";
+	$seen{$_}++;
+    }
+
+    my $queryfile = '/tmp/test.fasta';
+    my $dbfile = '../chloroExtractor-github/data/cds.nr98.fa';
+
+    open(FH, ">", $queryfile) || die;
+    foreach my $seqindex (keys %seen)
+    {
+	print FH ">", $seqindex, "\n";
+	print FH $seq[$seqindex], "\n";
+    }
+    close(FH) || die;
+
+    my $output = qx(tblastx -db $dbfile -query $queryfile -evalue 1e-10 -outfmt 6 -num_alignments 1 -num_threads 4);
+
+    if (length($output) > 0)
+    {
+	print "Found hits for cyclic graph:\n$output\n";
+	print $c,"\n";
+    }
 }
 
 $progress->update($max) if $max >= $next_update;
