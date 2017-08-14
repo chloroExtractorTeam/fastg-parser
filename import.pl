@@ -12,6 +12,7 @@ my $g = Graph->new(directed => 1);
 my %names = ();
 my @seq = ();
 my @digraphs = ();
+my %seq2seqname = ();
 my $lastname = "";
 
 open(FH, "<", $infile) || die "Unable to open file '$infile'\n";
@@ -57,6 +58,7 @@ while (<FH>)
 
 	    push(@seq, "");
 	    $names{$seqname} = @seq-1;
+	    $seq2seqname{@seq-1} = $seqname;
 	} else {
 	    # in case the sequence is already known
 	    $lastname = undef;
