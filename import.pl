@@ -6,7 +6,18 @@ use warnings;
 use Graph;
 use Term::ProgressBar;
 
-my $infile = $ARGV[0];
+use Getopt::Long qw(:config no_ignore_case);
+use File::Temp;
+
+my $infile = "";
+my $outfile = "";
+my $blastdbfile = '../chloroExtractor-github/data/cds.nr98.fa';
+
+GetOptions(
+    'i|infile=s' => \$infile,
+    'o|outfile=s' => \$outfile,
+    'b|blastdb=s' => \$blastdbfile
+    );
 
 my $g = Graph->new(directed => 1);
 
@@ -225,18 +236,16 @@ for(my $i = 0;  $i < @all_weakly_connected_components+0; $i++)
 	$seen{$_}++;
     }
 
-    my $queryfile = '/tmp/test.fasta';
-    my $dbfile = '../chloroExtractor-github/data/cds.nr98.fa';
+    my ($fh, $filename) = File::Temp::tempfile("tempXXXXX", SUFFIX => ".fa", UNLINK => 1);
 
-    open(FH, ">", $queryfile) || die;
     foreach my $seqindex (keys %seen)
     {
-	print FH ">", $seqindex, "\n";
-	print FH $seq[$seqindex], "\n";
+	print $fh ">", $seqindex, "\n";
+	print $fh $seq[$seqindex], "\n";
     }
-    close(FH) || die;
+    close($fh) || die;
 
-    my $output = qx(tblastx -db $dbfile -query $queryfile -evalue 1e-10 -outfmt 6 -num_alignments 1 -num_threads 4);
+    my $output = qx(tblastx -db $blastdbfile -query $filename -evalue 1e-10 -outfmt 6 -num_alignments 1 -num_threads 4);
 
     if (length($output) > 0)
     {
