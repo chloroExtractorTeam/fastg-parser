@@ -256,6 +256,122 @@ for(my $i = 0;  $i < @all_weakly_connected_components+0; $i++)
 
 $progress->update($max) if $max >= $next_update;
 
+# check if only a single thing is left
+my $chloroplast_seq = "";
+if (@contigs_with_blast_hits == 1)
+{
+    my $c = shift @contigs_with_blast_hits;
+
+    # check the number of nodes
+    my %nodes = ();
+
+    # find the node with the highest connectivity. This should be the inverted repead
+    my @degree = ();
+
+    foreach my $v ($c->vertices)
+    {
+	push(@degree, { v => $v, val => $c->in_degree($v)+$c->out_degree($v) });
+
+	my $node = "$v";
+	$node =~ s/'//g;
+
+	$nodes{$node}++;
+    }
+
+    printf STDERR "Found %d different nodes\n", (keys %nodes)+0;
+
+    @degree = sort { $b->{val} <=> $a->{val} || $b->{v} cmp $a->{v} } @degree;
+
+    my $inverted_repeat = "$degree[0]{v}";
+
+    if ($inverted_repeat =~ /\'/)
+    {
+	$inverted_repeat =~ s/'//g;
+    }
+
+    printf STDERR "The inverted repeat is node number: %d\n", $inverted_repeat;
+    delete $nodes{$inverted_repeat};
+
+    # number of nodes only 2?
+    if (keys %nodes == 2)
+    {
+	my ($lsc, $ssc) = (keys %nodes);
+
+	# check if assumption is correct and nodes are assigned correct
+	if (length($seq[$lsc]) < length($seq[$ssc]))
+	{
+	    ($lsc, $ssc) = ($ssc, $lsc);
+	}
+
+	printf STDERR "The LSC is node number: %d and the SSC is node number: %d\n", $lsc, $ssc;
+
+	$chloroplast_seq = ">potential_chloroplast_sequence\n";
+
+	# the order of lsc(0), inverted_repeat(1), ssc(2) is
+	# 1-0,0-1',1'-2 or 1'-0,0-1,1-2, but the orientation of the
+	# ssc is guessed due to lack of long reads, but to identify 1-0 or 1'-0 we need to find that edge
+	if ($c->has_edge($inverted_repeat, $lsc))
+	{
+	    $chloroplast_seq .= get_orig_sequence_by_number($inverted_repeat).get_orig_sequence_by_number($lsc).get_orig_sequence_by_number($inverted_repeat."'").get_orig_sequence_by_number($ssc)."\n";
+	} else {
+	    $chloroplast_seq .= get_orig_sequence_by_number($inverted_repeat."'").get_orig_sequence_by_number($lsc).get_orig_sequence_by_number($inverted_repeat).get_orig_sequence_by_number($ssc)."\n";
+	}
+    }
+}
+
+unless ($chloroplast_seq)
+{
+    foreach my $subgraphs_with_blast_hits (@contigs_with_blast_hits)
+    {
+	foreach my $v ($subgraphs_with_blast_hits->vertices)
+	{
+	    $chloroplast_seq .= ">potential_chloroplast_contig_".$v."\n".get_orig_sequence_by_number($v)."\n";
+	}
+    }
+}
+
+open(FH, ">", $outfile) || die "Unable to open '$outfile' for writing\n";
+print FH $chloroplast_seq;
+close(FH) || die "Unable to close '$outfile' after writing\n";
+
+# return sequences
+sub get_orig_sequence_by_number
+{
+    my ($number) = @_;
+
+    my ($name, $sequence);
+
+    my $reverse = 0;
+    if ($number =~ /'/)
+    {
+	$number =~s/'//;
+	$reverse = 1;
+    }
+
+    unless (exists $seq2seqname{$number})
+    {
+	die sprintf "Unable to find original name for sequence #%d\n", $number;
+    }
+
+    $name = $seq2seqname{$number};
+
+    unless (defined $seq[$number])
+    {
+	die sprintf"Unable to find sequence information for #%d\n", $number;
+    }
+
+    $sequence = $seq[$number];
+    if ($reverse)
+    {
+	$sequence = reverse $sequence;
+	$sequence =~ tr/ACGTacgt/TGCAtgca/;
+    }
+
+    # return {name => $name, seq => $sequence};
+    return $sequence;
+}
+
+
 # from http://stackoverflow.com/questions/8729302/creating-a-subgraph-of-a-graph-induced-by-node-list
 
 # subgraph ($graph, @node_list);
