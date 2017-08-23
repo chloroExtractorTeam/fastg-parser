@@ -249,8 +249,8 @@ for(my $i = 0;  $i < @all_weakly_connected_components+0; $i++)
 
     if (length($output) > 0)
     {
-	print "Found hits for cyclic graph:\n$output\n";
-	print $c,"\n";
+	print STDERR "Found hits for cyclic graph: ", $c, "\n";;
+	push(@contigs_with_blast_hits, $c);
     }
 }
 
