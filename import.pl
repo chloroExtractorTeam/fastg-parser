@@ -193,6 +193,8 @@ my $progress = Term::ProgressBar->new({name => 'WCC', count => $max, remove => 1
 $progress->minor(0);
 my $next_update = 0;
 
+my @contigs_with_blast_hits = ();
+
 for(my $i = 0;  $i < @all_weakly_connected_components+0; $i++)
 {
     $next_update = $progress->update($i) if $i >= $next_update;
