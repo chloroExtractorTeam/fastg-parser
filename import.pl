@@ -9,6 +9,9 @@ use Term::ProgressBar;
 use Getopt::Long qw(:config no_ignore_case);
 use File::Temp;
 
+use Log::Log4perl qw(:no_extra_logdie_message);
+use Log::Log4perl::Level;
+
 my $infile = "";
 my $outfile = "";
 my $blastdbfile = '../chloroExtractor-github/data/cds.nr98.fa';
@@ -40,7 +43,17 @@ our $VERSION = 0.02;
 
 our $ID = 'fcg';
 
+# get a logger
+my $L = Log::Log4perl::get_logger();
 
+my $log_cfg = 'log4perl.rootLogger                     = INFO, Screen
+log4perl.appender.Screen                = Log::Log4perl::Appender::Screen
+log4perl.appender.Screen.stderr         = 1
+log4perl.appender.Screen.layout         = PatternLayout
+log4perl.appender.Screen.layout.ConversionPattern = [%d{yy-MM-dd HH:mm:ss}] ['.$ID.'] %m%n
+';
+
+Log::Log4perl->init( \$log_cfg );
 
 # help
 $help && pod2usage(1);
@@ -105,7 +118,7 @@ while (<FH>)
     }
 }
 
-close(FH) || die "Unable to close file '$infile'\n";
+close(FH) || $L->logdie("Unable to close file '$infile'");
 
 # build graph information
 foreach my $digraph (@digraphs)
@@ -113,7 +126,7 @@ foreach my $digraph (@digraphs)
     # create the starting node
     unless (exists $names{$digraph->{from}})
     {
-	die "Unable to find the node '$digraph->{from}'\n";
+	$L->logdie("Unable to find the node '$digraph->{from}'");
     }
     my $from_node = $names{$digraph->{from}};
     $from_node .= "'" if ($digraph->{from_rev});
@@ -138,7 +151,7 @@ foreach my $digraph (@digraphs)
 	# the node need to exist
 	unless (exists $names{$connected_node})
 	{
-	    die "Unable to find the node '$connected_node'\n";
+	    $L->logdie("Unable to find the node '$connected_node'");
 	}
 
 	my $node = $names{$connected_node};
@@ -160,16 +173,11 @@ foreach my $name (keys %names)
 {
     $seqlen += length($seq[$names{$name}]);
 }
-printf STDERR "Found %d different nodes with %d bp total sequence length and %d digraph information packages\n", (keys %names)+0, $seqlen, @digraphs+0;
-
-foreach my $v ($g->vertices)
-{
-    #print STDERR "Vertices: $v\n";
-}
+$L->info(sprintf "Found %d different nodes with %d bp total sequence length and %d digraph information packages", (keys %names)+0, $seqlen, @digraphs+0);
 
 my @all_weakly_connected_components = $g->weakly_connected_components();
 
-printf STDERR "Found %d weakly connected components\n", @all_weakly_connected_components+0;
+$L->info(sprintf "Found %d weakly connected components", @all_weakly_connected_components+0);
 
 my $max = @all_weakly_connected_components+0;
 my $progress = Term::ProgressBar->new({name => 'WCC', count => $max, remove => 1, ETA   => 'linear'});
@@ -215,13 +223,13 @@ for(my $i = 0;  $i < @all_weakly_connected_components+0; $i++)
 	print $fh ">", $seqindex, "\n";
 	print $fh $seq[$seqindex], "\n";
     }
-    close($fh) || die;
+    close($fh) || $L->logdie("Unable to close temporary file '$filename' after writing");
 
     my $output = qx(tblastx -db $blastdbfile -query $filename -evalue 1e-10 -outfmt 6 -num_alignments 1 -num_threads 4);
 
     if (length($output) > 0)
     {
-	print STDERR "Found hits for cyclic graph: ", $c, "\n";;
+	$L->debug("Found hits for cyclic graph: ".$c);
 	push(@contigs_with_blast_hits, $c);
     }
 }
@@ -250,7 +258,7 @@ if (@contigs_with_blast_hits == 1)
 	$nodes{$node}++;
     }
 
-    printf STDERR "Found %d different nodes\n", (keys %nodes)+0;
+    $L->info(sprintf "Found %d different nodes", (keys %nodes)+0);
 
     @degree = sort { $b->{val} <=> $a->{val} || $b->{v} cmp $a->{v} } @degree;
 
@@ -261,7 +269,7 @@ if (@contigs_with_blast_hits == 1)
 	$inverted_repeat =~ s/'//g;
     }
 
-    printf STDERR "The inverted repeat is node number: %d\n", $inverted_repeat;
+    $L->info(sprintf "The inverted repeat is node number: %d", $inverted_repeat);
     delete $nodes{$inverted_repeat};
 
     # number of nodes only 2?
@@ -275,7 +283,7 @@ if (@contigs_with_blast_hits == 1)
 	    ($lsc, $ssc) = ($ssc, $lsc);
 	}
 
-	printf STDERR "The LSC is node number: %d and the SSC is node number: %d\n", $lsc, $ssc;
+	$L->info(sprintf "The LSC is node number: %d and the SSC is node number: %d", $lsc, $ssc);
 
 	$chloroplast_seq = ">potential_chloroplast_sequence\n";
 
@@ -303,9 +311,9 @@ unless ($chloroplast_seq)
     }
 }
 
-open(FH, ">", $outfile) || die "Unable to open '$outfile' for writing\n";
+open(FH, ">", $outfile) || $L->logdie("Unable to open '$outfile' for writing");
 print FH $chloroplast_seq;
-close(FH) || die "Unable to close '$outfile' after writing\n";
+close(FH) || $L->logdie("Unable to close '$outfile' after writing");
 
 # return sequences
 sub get_orig_sequence_by_number
@@ -323,14 +331,14 @@ sub get_orig_sequence_by_number
 
     unless (exists $seq2seqname{$number})
     {
-	die sprintf "Unable to find original name for sequence #%d\n", $number;
+	$L->logdie(sprintf "Unable to find original name for sequence #%d", $number);
     }
 
     $name = $seq2seqname{$number};
 
     unless (defined $seq[$number])
     {
-	die sprintf"Unable to find sequence information for #%d\n", $number;
+	$L->logdie(sprintf"Unable to find sequence information for #%d", $number);
     }
 
     $sequence = $seq[$number];
