@@ -262,13 +262,14 @@ if (@contigs_with_blast_hits == 1)
 	$chloroplast_seq = ">potential_chloroplast_sequence\n";
 
 	# the order of lsc(0), inverted_repeat(1), ssc(2) is
-	# 1-0,0-1',1'-2 or 1'-0,0-1,1-2, but the orientation of the
-	# ssc is guessed due to lack of long reads, but to identify 1-0 or 1'-0 we need to find that edge
-	if ($c->has_edge($inverted_repeat, $lsc))
+	# 0-1,1-2,2-1' or 0-1',1'-2,2-1 but the orientation of the ssc
+	# is guessed due to lack of long reads, but to identify 1-0 or
+	# 1'-0 we need to find that edge
+	if ($c->has_edge($inverted_repeat, $lsc) || $c->has_edge($lsc, $inverted_repeat."'") || $c->has_edge($lsc."'", $inverted_repeat) || $c->has_edge($lsc."'", $inverted_repeat."'") )
 	{
-	    $chloroplast_seq .= get_orig_sequence_by_number($inverted_repeat).get_orig_sequence_by_number($lsc).get_orig_sequence_by_number($inverted_repeat."'").get_orig_sequence_by_number($ssc)."\n";
+	    $chloroplast_seq .= get_orig_sequence_by_number($lsc).get_orig_sequence_by_number($inverted_repeat."'").get_orig_sequence_by_number($ssc).get_orig_sequence_by_number($inverted_repeat)."\n";
 	} else {
-	    $chloroplast_seq .= get_orig_sequence_by_number($inverted_repeat."'").get_orig_sequence_by_number($lsc).get_orig_sequence_by_number($inverted_repeat).get_orig_sequence_by_number($ssc)."\n";
+	    $chloroplast_seq .= get_orig_sequence_by_number($lsc).get_orig_sequence_by_number($inverted_repeat).get_orig_sequence_by_number($ssc).get_orig_sequence_by_number($inverted_repeat."'")"\n";
 	}
     }
 }
