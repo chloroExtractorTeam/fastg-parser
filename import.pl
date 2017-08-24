@@ -12,11 +12,15 @@ use File::Temp;
 my $infile = "";
 my $outfile = "";
 my $blastdbfile = '../chloroExtractor-github/data/cds.nr98.fa';
+my $help = 0;
+my $version = 0;
 
 GetOptions(
     'i|in|infile=s'   => \$infile,
     'o|out|outfile=s' => \$outfile,
-    'b|blastdb=s'     => \$blastdbfile
+    'b|blastdb=s'     => \$blastdbfile,
+    'v|version'       => \$version,
+    '?|h|help'        => \$help
     );
 
 my $g = Graph->new(directed => 1);
@@ -32,8 +36,22 @@ my $MAXNODES = 100;
 my $MINSEQLEN = 25000;
 my $MAXSEQLEN = 1000000;
 
+our $VERSION = 0.02;
 
-open(FH, "<", $infile) || die "Unable to open file '$infile'\n";
+our $ID = 'fcg';
+
+
+
+# help
+$help && pod2usage(1);
+
+# version
+if($version){
+    print "$VERSION\n";
+    exit 0;
+}
+
+open(FH, "<", $infile) || $L->logdie("Unable to open file '$infile'");
 
 while (<FH>)
 {
