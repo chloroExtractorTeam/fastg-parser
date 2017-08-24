@@ -25,7 +25,7 @@ GetOptions(
     'o|out|outfile=s' => \$outfile,
     'b|blastdb=s'     => \$blastdbfile,
     'v|version'       => \$version,
-    '?|h|help'        => \$help
+    'h|help'        => \$help
     );
 
 my $g = Graph->new(directed => 1);
