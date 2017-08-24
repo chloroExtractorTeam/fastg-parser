@@ -14,9 +14,9 @@ my $outfile = "";
 my $blastdbfile = '../chloroExtractor-github/data/cds.nr98.fa';
 
 GetOptions(
-    'i|infile=s' => \$infile,
-    'o|outfile=s' => \$outfile,
-    'b|blastdb=s' => \$blastdbfile
+    'i|in|infile=s'   => \$infile,
+    'o|out|outfile=s' => \$outfile,
+    'b|blastdb=s'     => \$blastdbfile
     );
 
 my $g = Graph->new(directed => 1);
