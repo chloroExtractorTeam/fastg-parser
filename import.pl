@@ -25,7 +25,7 @@ GetOptions(
     'o|out|outfile=s' => \$outfile,
     'b|blastdb=s'     => \$blastdbfile,
     'v|version'       => \$version,
-    '?|h|help'        => \$help
+    'h|help'        => \$help
     );
 
 my $g = Graph->new(directed => 1);
@@ -41,7 +41,7 @@ my $MAXNODES = 100;
 my $MINSEQLEN = 25000;
 my $MAXSEQLEN = 1000000;
 
-our $VERSION = 0.3;
+use version 0.77; our $VERSION = version->declare("v0.3.1");
 
 our $ID = 'fcg';
 
