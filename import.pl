@@ -41,7 +41,7 @@ my $MAXNODES = 100;
 my $MINSEQLEN = 25000;
 my $MAXSEQLEN = 1000000;
 
-our $VERSION = 0.3;
+use version 0.77; our $VERSION = version->declare("v0.3.1");
 
 our $ID = 'fcg';
 
