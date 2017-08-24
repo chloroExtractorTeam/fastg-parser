@@ -12,9 +12,11 @@ use File::Temp;
 use Log::Log4perl qw(:no_extra_logdie_message);
 use Log::Log4perl::Level;
 
+use FindBin;
+
 my $infile = "";
 my $outfile = "";
-my $blastdbfile = '../chloroExtractor-github/data/cds.nr98.fa';
+my $blastdbfile = "$FindBin::Bin/../data/cds.nr98.fa";
 my $help = 0;
 my $version = 0;
 
@@ -39,7 +41,7 @@ my $MAXNODES = 100;
 my $MINSEQLEN = 25000;
 my $MAXSEQLEN = 1000000;
 
-our $VERSION = 0.02;
+our $VERSION = 0.3;
 
 our $ID = 'fcg';
 
