@@ -38,10 +38,10 @@ my $lastname = "";
 
 my $MINNODES = 3;
 my $MAXNODES = 100;
-my $MINSEQLEN = 25000;
+my $MINSEQLEN = 2500;
 my $MAXSEQLEN = 1000000;
 
-use version 0.77; our $VERSION = version->declare("v0.3.1");
+use version 0.77; our $VERSION = version->declare("v0.3.2");
 
 our $ID = 'fcg';
 
@@ -186,7 +186,7 @@ my $progress = Term::ProgressBar->new({name => 'WCC', count => $max, remove => 1
 $progress->minor(0);
 my $next_update = 0;
 
-my @contigs_with_blast_hits = ();
+my @cyclic_contigs_with_blast_hits = ();
 
 for(my $i = 0;  $i < @all_weakly_connected_components+0; $i++)
 {
@@ -232,7 +232,7 @@ for(my $i = 0;  $i < @all_weakly_connected_components+0; $i++)
     if (length($output) > 0)
     {
 	$L->debug("Found hits for cyclic graph: ".$c);
-	push(@contigs_with_blast_hits, $c);
+	push(@cyclic_contigs_with_blast_hits, $c);
     }
 }
 
@@ -240,9 +240,9 @@ $progress->update($max) if $max >= $next_update;
 
 # check if only a single thing is left
 my $chloroplast_seq = "";
-if (@contigs_with_blast_hits == 1)
+if (@cyclic_contigs_with_blast_hits == 1)
 {
-    my $c = shift @contigs_with_blast_hits;
+    my $c = shift @cyclic_contigs_with_blast_hits;
 
     # check the number of nodes
     my %nodes = ();
@@ -299,18 +299,46 @@ if (@contigs_with_blast_hits == 1)
 	} else {
 	    $chloroplast_seq .= get_orig_sequence_by_number($lsc).get_orig_sequence_by_number($inverted_repeat).get_orig_sequence_by_number($ssc).get_orig_sequence_by_number($inverted_repeat."'")."\n";
 	}
+
+	$L->info("Single circular chloroplast seems to be found");
+
     }
 }
 
 unless ($chloroplast_seq)
 {
-    foreach my $subgraphs_with_blast_hits (@contigs_with_blast_hits)
+    $L->info("No single circular chloroplast was found. Searching for partial hits...");
+
+    my ($fh, $filename) = File::Temp::tempfile("tempXXXXX", SUFFIX => ".fa", UNLINK => 1);
+
+    foreach my $seqname (keys %names)
     {
-	foreach my $v ($subgraphs_with_blast_hits->vertices)
+	my $seqlen = length(get_orig_sequence_by_number($names{$seqname}));
+	if ($seqlen >= $MINSEQLEN && $seqlen <= $MAXSEQLEN)
 	{
-	    $chloroplast_seq .= ">potential_chloroplast_contig_".$v."\n".get_orig_sequence_by_number($v)."\n";
+	    printf $fh ">%d\n%s\n", $names{$seqname}, get_orig_sequence_by_number($names{$seqname});
 	}
     }
+
+    close($fh) || $L->logdie("Unable to close temporary file '$filename' after writing");
+
+    my $cmd = "tblastx -db $blastdbfile -query $filename -evalue 1e-10 -outfmt '6 qseqid' -num_alignments 1 -num_threads 4";
+    open(FH, "$cmd |") || die;
+    my %seen = ();
+
+    while (<FH>)
+    {
+	chomp;
+	unless (exists $seen{$_})
+	{
+	    $chloroplast_seq .= sprintf(">potential_chloroplast_hit_original_name=%s\n%s\n", $seq2seqname{$_}, get_orig_sequence_by_number($_));
+	    $seen{$_}++;
+	}
+    }
+
+    close(FH) || die;
+
+    $L->info(sprintf("Found %d partial chloroplast sequences", int(keys %seen)));
 }
 
 open(FH, ">", $outfile) || $L->logdie("Unable to open '$outfile' for writing");
