@@ -299,6 +299,9 @@ if (@cyclic_contigs_with_blast_hits == 1)
 	} else {
 	    $chloroplast_seq .= get_orig_sequence_by_number($lsc).get_orig_sequence_by_number($inverted_repeat).get_orig_sequence_by_number($ssc).get_orig_sequence_by_number($inverted_repeat."'")."\n";
 	}
+
+	$L->info("Single circular chloroplast seems to be found");
+
     }
 }
 
