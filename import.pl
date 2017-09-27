@@ -12,6 +12,8 @@ use File::Temp;
 use Log::Log4perl qw(:no_extra_logdie_message);
 use Log::Log4perl::Level;
 
+use Pod::Usage;
+
 use FindBin;
 
 my $infile = "";
