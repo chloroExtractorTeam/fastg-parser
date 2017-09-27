@@ -186,7 +186,7 @@ my $progress = Term::ProgressBar->new({name => 'WCC', count => $max, remove => 1
 $progress->minor(0);
 my $next_update = 0;
 
-my @contigs_with_blast_hits = ();
+my @cyclic_contigs_with_blast_hits = ();
 
 for(my $i = 0;  $i < @all_weakly_connected_components+0; $i++)
 {
@@ -232,7 +232,7 @@ for(my $i = 0;  $i < @all_weakly_connected_components+0; $i++)
     if (length($output) > 0)
     {
 	$L->debug("Found hits for cyclic graph: ".$c);
-	push(@contigs_with_blast_hits, $c);
+	push(@cyclic_contigs_with_blast_hits, $c);
     }
 }
 
@@ -240,9 +240,9 @@ $progress->update($max) if $max >= $next_update;
 
 # check if only a single thing is left
 my $chloroplast_seq = "";
-if (@contigs_with_blast_hits == 1)
+if (@cyclic_contigs_with_blast_hits == 1)
 {
-    my $c = shift @contigs_with_blast_hits;
+    my $c = shift @cyclic_contigs_with_blast_hits;
 
     # check the number of nodes
     my %nodes = ();
@@ -304,7 +304,7 @@ if (@contigs_with_blast_hits == 1)
 
 unless ($chloroplast_seq)
 {
-    foreach my $subgraphs_with_blast_hits (@contigs_with_blast_hits)
+    foreach my $subgraphs_with_blast_hits (@cyclic_contigs_with_blast_hits)
     {
 	foreach my $v ($subgraphs_with_blast_hits->vertices)
 	{
