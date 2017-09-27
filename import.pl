@@ -307,13 +307,38 @@ if (@cyclic_contigs_with_blast_hits == 1)
 
 unless ($chloroplast_seq)
 {
-    foreach my $subgraphs_with_blast_hits (@cyclic_contigs_with_blast_hits)
+    $L->info("No single circular chloroplast was found. Searching for partial hits...");
+
+    my ($fh, $filename) = File::Temp::tempfile("tempXXXXX", SUFFIX => ".fa", UNLINK => 1);
+
+    foreach my $seqname (keys %names)
     {
-	foreach my $v ($subgraphs_with_blast_hits->vertices)
+	my $seqlen = length(get_orig_sequence_by_number($names{$seqname}));
+	if ($seqlen >= $MINSEQLEN && $seqlen <= $MAXSEQLEN)
 	{
-	    $chloroplast_seq .= ">potential_chloroplast_contig_".$v."\n".get_orig_sequence_by_number($v)."\n";
+	    printf $fh ">%d\n%s\n", $names{$seqname}, get_orig_sequence_by_number($names{$seqname});
 	}
     }
+
+    close($fh) || $L->logdie("Unable to close temporary file '$filename' after writing");
+
+    my $cmd = "tblastx -db $blastdbfile -query $filename -evalue 1e-10 -outfmt '6 qseqid' -num_alignments 1 -num_threads 4";
+    open(FH, "$cmd |") || die;
+    my %seen = ();
+
+    while (<FH>)
+    {
+	chomp;
+	unless (exists $seen{$_})
+	{
+	    $chloroplast_seq .= sprintf(">potential_chloroplast_hit_original_name=%s\n%s\n", $seq2seqname{$_}, get_orig_sequence_by_number($_));
+	    $seen{$_}++;
+	}
+    }
+
+    close(FH) || die;
+
+    $L->info(sprintf("Found %d partial chloroplast sequences", int(keys %seen)));
 }
 
 open(FH, ">", $outfile) || $L->logdie("Unable to open '$outfile' for writing");
