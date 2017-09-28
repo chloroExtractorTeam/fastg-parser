@@ -343,7 +343,7 @@ unless ($chloroplast_seq)
 		unless ($@)
 		{
 		    $chloroplast_seq .= sprintf(">potential_chloroplast_hit_original_name=%s\n%s\n", $seq2seqname{$queryid}, $seq);
-		    $seen{$_}++;
+		    $seen{$queryid}++;
 		} else {
 		    $L->info("Problems retrieving the sequence for id $queryid");
 		}
