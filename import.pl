@@ -44,7 +44,7 @@ my $MINSEQLEN = 25000;
 my $MAXSEQLEN = 1000000;
 my $FACTOR4RESCUE = 10;
 
-use version 0.77; our $VERSION = version->declare("v0.3.5");
+use version 0.77; our $VERSION = version->declare("v0.3.6");
 
 our $ID = 'fcg';
 
@@ -331,11 +331,25 @@ unless ($chloroplast_seq)
 
     while (<FH>)
     {
-	chomp;
-	unless (exists $seen{$_})
+	my $queryid = $_;
+	chomp($queryid);
+	unless (exists $seen{$queryid})
 	{
-	    $chloroplast_seq .= sprintf(">potential_chloroplast_hit_original_name=%s\n%s\n", $seq2seqname{$_}, get_orig_sequence_by_number($_));
-	    $seen{$_}++;
+	    unless (exists $seq2seqname{$queryid})
+	    {
+		local $@;
+		my $seq;
+		eval { $seq = get_orig_sequence_by_number($queryid) };
+		unless ($@)
+		{
+		    $chloroplast_seq .= sprintf(">potential_chloroplast_hit_original_name=%s\n%s\n", $seq2seqname{$queryid}, $seq);
+		    $seen{$_}++;
+		} else {
+		    $L->info("Problems retrieving the sequence for id $queryid");
+		}
+	    } else {
+		$L->info("Got id $queryid from BLAST, but was not able to find it in my mapping tables... Ignoring the BLAST hit");
+	    }
 	}
     }
 
