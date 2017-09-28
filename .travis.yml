@@ -1,0 +1,27 @@
+language: perl
+perl:
+    - "5.8"
+    - "5.10"
+    - "5.12"
+    - "5.14"
+    - "5.18"
+    - "5.20"
+    - "5.22"
+sudo:
+  false
+addons:
+  apt:
+    packages:
+    - ncbi-blast+
+before_install:
+    - git clone git://github.com/haarg/perl-travis-helper
+    - source perl-travis-helper/init
+    - build-perl
+    - perl -V
+install:
+    - cpanm Term::ProgressBar Graph Log::Log4perl Pod::Usage Devel::Cover Devel::Cover::Report::Coveralls Test::Script::Run LWP::Simple
+script:
+    - PERL5OPT=-MDevel::Cover=-coverage,statement,branch,condition,path,subroutine prove -lrv t/*.t
+after_success:
+    - cover -ignore_re=lib
+    - cover -ignore_re=lib -report coveralls
