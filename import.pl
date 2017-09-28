@@ -44,7 +44,7 @@ my $MINSEQLEN = 25000;
 my $MAXSEQLEN = 1000000;
 my $FACTOR4RESCUE = 10;
 
-use version 0.77; our $VERSION = version->declare("v0.3.6");
+use version 0.77; our $VERSION = version->declare("v0.4.0");
 
 our $ID = 'fcg';
 
@@ -335,7 +335,7 @@ unless ($chloroplast_seq)
 	chomp($queryid);
 	unless (exists $seen{$queryid})
 	{
-	    unless (exists $seq2seqname{$queryid})
+	    if (exists $seq2seqname{$queryid})
 	    {
 		local $@;
 		my $seq;
@@ -343,7 +343,7 @@ unless ($chloroplast_seq)
 		unless ($@)
 		{
 		    $chloroplast_seq .= sprintf(">potential_chloroplast_hit_original_name=%s\n%s\n", $seq2seqname{$queryid}, $seq);
-		    $seen{$_}++;
+		    $seen{$queryid}++;
 		} else {
 		    $L->info("Problems retrieving the sequence for id $queryid");
 		}
