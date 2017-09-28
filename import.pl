@@ -364,14 +364,14 @@ sub get_orig_sequence_by_number
 
     unless (exists $seq2seqname{$number})
     {
-	$L->logdie(sprintf "Unable to find original name for sequence #%d", $number);
+	$L->logdie(sprintf "Unable to find original name for sequence %s", $number);
     }
 
     $name = $seq2seqname{$number};
 
     unless (defined $seq[$number])
     {
-	$L->logdie(sprintf"Unable to find sequence information for #%d", $number);
+	$L->logdie(sprintf"Unable to find sequence information for %s", $number);
     }
 
     $sequence = $seq[$number];
