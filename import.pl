@@ -40,10 +40,11 @@ my $lastname = "";
 
 my $MINNODES = 3;
 my $MAXNODES = 100;
-my $MINSEQLEN = 2500;
+my $MINSEQLEN = 25000;
 my $MAXSEQLEN = 1000000;
+my $FACTOR4RESCUE = 10;
 
-use version 0.77; our $VERSION = version->declare("v0.3.3");
+use version 0.77; our $VERSION = version->declare("v0.3.4");
 
 our $ID = 'fcg';
 
@@ -316,7 +317,7 @@ unless ($chloroplast_seq)
     foreach my $seqname (keys %names)
     {
 	my $seqlen = length(get_orig_sequence_by_number($names{$seqname}));
-	if ($seqlen >= $MINSEQLEN && $seqlen <= $MAXSEQLEN)
+	if ($seqlen >= $MINSEQLEN/$FACTOR4RESCUE && $seqlen <= $MAXSEQLEN)
 	{
 	    printf $fh ">%d\n%s\n", $names{$seqname}, get_orig_sequence_by_number($names{$seqname});
 	}
