@@ -25,3 +25,6 @@ script:
 after_success:
     - cover -ignore_re=lib
     - cover -ignore_re=lib -report coveralls
+matrix:
+    allow_failures:
+       - perl: "5.8"
