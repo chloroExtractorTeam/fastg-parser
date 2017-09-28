@@ -335,7 +335,7 @@ unless ($chloroplast_seq)
 	chomp($queryid);
 	unless (exists $seen{$queryid})
 	{
-	    unless (exists $seq2seqname{$queryid})
+	    if (exists $seq2seqname{$queryid})
 	    {
 		local $@;
 		my $seq;
