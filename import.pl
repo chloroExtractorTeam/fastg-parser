@@ -44,7 +44,7 @@ my $MINSEQLEN = 25000;
 my $MAXSEQLEN = 1000000;
 my $FACTOR4RESCUE = 10;
 
-use version 0.77; our $VERSION = version->declare("v0.4.0");
+use version 0.77; our $VERSION = version->declare("v0.5.0");
 
 our $ID = 'fcg';
 
@@ -298,11 +298,31 @@ if (@cyclic_contigs_with_blast_hits == 1)
 	# 1'-0 we need to find that edge
 	if ($c->has_edge($inverted_repeat, $lsc) || $c->has_edge($lsc, $inverted_repeat."'") || $c->has_edge($lsc."'", $inverted_repeat) || $c->has_edge($lsc."'", $inverted_repeat."'") )
 	{
-	    $chloroplast_seq .= get_orig_sequence_by_number($lsc).get_orig_sequence_by_number($inverted_repeat."'").get_orig_sequence_by_number($ssc).get_orig_sequence_by_number($inverted_repeat)."\n";
+	    $chloroplast_seq .= join(" ", get_orig_sequence_by_number($lsc),
+				          get_orig_sequence_by_number($inverted_repeat."'"),
+				          get_orig_sequence_by_number($ssc),
+				          get_orig_sequence_by_number($inverted_repeat)
+		);
 	} else {
-	    $chloroplast_seq .= get_orig_sequence_by_number($lsc).get_orig_sequence_by_number($inverted_repeat).get_orig_sequence_by_number($ssc).get_orig_sequence_by_number($inverted_repeat."'")."\n";
+	    $chloroplast_seq .= join(" ", get_orig_sequence_by_number($lsc),
+				          get_orig_sequence_by_number($inverted_repeat),
+				          get_orig_sequence_by_number($ssc),
+  	 			          get_orig_sequence_by_number($inverted_repeat."'")
+		);
 	}
 
+	if ($chloroplast_seq)
+	{
+	    # delete overlaps between nodes
+	    $chloroplast_seq =~ s/(\S+) \1/\1/g;
+
+	    # delete spaces
+	    $chloroplast_seq =~ s/ //g;
+
+	    # add a newline
+	    $chloroplast_seq .= "\n";
+
+	}
 	$L->info("Single circular chloroplast seems to be found");
 
     }
