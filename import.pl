@@ -44,7 +44,7 @@ my $MINSEQLEN = 25000;
 my $MAXSEQLEN = 1000000;
 my $FACTOR4RESCUE = 10;
 
-use version 0.77; our $VERSION = version->declare("v0.4.0");
+use version 0.77; our $VERSION = version->declare("v0.5.1");
 
 our $ID = 'fcg';
 
@@ -290,7 +290,7 @@ if (@cyclic_contigs_with_blast_hits == 1)
 
 	$L->info(sprintf "The LSC is node number: %d and the SSC is node number: %d", $lsc, $ssc);
 
-	$chloroplast_seq = ">potential_chloroplast_sequence\n";
+	$chloroplast_seq = "";
 
 	# the order of lsc(0), inverted_repeat(1), ssc(2) is
 	# 0-1,1-2,2-1' or 0-1',1'-2,2-1 but the orientation of the ssc
@@ -298,11 +298,50 @@ if (@cyclic_contigs_with_blast_hits == 1)
 	# 1'-0 we need to find that edge
 	if ($c->has_edge($inverted_repeat, $lsc) || $c->has_edge($lsc, $inverted_repeat."'") || $c->has_edge($lsc."'", $inverted_repeat) || $c->has_edge($lsc."'", $inverted_repeat."'") )
 	{
-	    $chloroplast_seq .= get_orig_sequence_by_number($lsc).get_orig_sequence_by_number($inverted_repeat."'").get_orig_sequence_by_number($ssc).get_orig_sequence_by_number($inverted_repeat)."\n";
+	    $chloroplast_seq .= join(" ", get_orig_sequence_by_number($lsc),
+				          get_orig_sequence_by_number($inverted_repeat."'"),
+				          get_orig_sequence_by_number($ssc),
+				          get_orig_sequence_by_number($inverted_repeat)
+		);
 	} else {
-	    $chloroplast_seq .= get_orig_sequence_by_number($lsc).get_orig_sequence_by_number($inverted_repeat).get_orig_sequence_by_number($ssc).get_orig_sequence_by_number($inverted_repeat."'")."\n";
+	    $chloroplast_seq .= join(" ", get_orig_sequence_by_number($lsc),
+				          get_orig_sequence_by_number($inverted_repeat),
+				          get_orig_sequence_by_number($ssc),
+  	 			          get_orig_sequence_by_number($inverted_repeat."'")
+		);
 	}
 
+	if ($chloroplast_seq)
+	{
+	    # delete overlaps between nodes
+	    $chloroplast_seq =~ s/(\S+) \1/$1/g;
+
+	    # delete spaces
+	    $chloroplast_seq =~ s/ //g;
+
+	    # find overlaps between start and end
+	    my $overlap_len = -1;
+	    for (my $i=0; $i<length($chloroplast_seq); $i++)
+	    {
+		if (substr($chloroplast_seq, 0, $i) eq substr($chloroplast_seq, $i*-1))
+		{
+		    $overlap_len = $i;
+		}
+	    }
+	    # if an overlap between start and end was found, remove it
+	    # from the start which should be the LSC
+	    if ($overlap_len != -1)
+	    {
+		my $overlap=substr($chloroplast_seq, 0, $overlap_len, "");
+		$L->info(sprintf("An overlap between start/end detected and removed: length=%d; sequence='%s'", length($overlap_len), $overlap));
+	    } else {
+		$L->info("No overlap between start/end was detected or removed!");
+	    }
+
+	    # add a header and a newline after the sequence
+	    $chloroplast_seq = ">potential_chloroplast_sequence\n".$chloroplast_seq."\n";
+
+	}
 	$L->info("Single circular chloroplast seems to be found");
 
     }
