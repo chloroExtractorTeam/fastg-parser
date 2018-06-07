@@ -290,7 +290,7 @@ if (@cyclic_contigs_with_blast_hits == 1)
 
 	$L->info(sprintf "The LSC is node number: %d and the SSC is node number: %d", $lsc, $ssc);
 
-	$chloroplast_seq = ">potential_chloroplast_sequence\n";
+	$chloroplast_seq = "";
 
 	# the order of lsc(0), inverted_repeat(1), ssc(2) is
 	# 0-1,1-2,2-1' or 0-1',1'-2,2-1 but the orientation of the ssc
@@ -314,7 +314,7 @@ if (@cyclic_contigs_with_blast_hits == 1)
 	if ($chloroplast_seq)
 	{
 	    # delete overlaps between nodes
-	    $chloroplast_seq =~ s/(\S+) \1/\1/g;
+	    $chloroplast_seq =~ s/(\S+) \1/$1/g;
 
 	    # delete spaces
 	    $chloroplast_seq =~ s/ //g;
@@ -333,10 +333,13 @@ if (@cyclic_contigs_with_blast_hits == 1)
 	    if ($overlap_len != -1)
 	    {
 		my $overlap=substr($chloroplast_seq, 0, $overlap_len, "");
+		$L->info(sprintf("An overlap between start/end detected and removed: length=%d; sequence='%s'", length($overlap_len), $overlap));
+	    } else {
+		$L->info("No overlap between start/end was detected or removed!");
 	    }
 
-	    # add a newline
-	    $chloroplast_seq .= "\n";
+	    # add a header and a newline after the sequence
+	    $chloroplast_seq = ">potential_chloroplast_sequence\n".$chloroplast_seq."\n";
 
 	}
 	$L->info("Single circular chloroplast seems to be found");
