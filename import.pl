@@ -319,6 +319,22 @@ if (@cyclic_contigs_with_blast_hits == 1)
 	    # delete spaces
 	    $chloroplast_seq =~ s/ //g;
 
+	    # find overlaps between start and end
+	    my $overlap_len = -1;
+	    for (my $i=0; $i<length($chloroplast_seq); $i++)
+	    {
+		if (substr($chloroplast_seq, 0, $i) eq substr($chloroplast_seq, $i*-1))
+		{
+		    $overlap_len = $i;
+		}
+	    }
+	    # if an overlap between start and end was found, remove it
+	    # from the start which should be the LSC
+	    if ($overlap_len != -1)
+	    {
+		my $overlap=substr($chloroplast_seq, 0, $overlap_len, "");
+	    }
+
 	    # add a newline
 	    $chloroplast_seq .= "\n";
 
