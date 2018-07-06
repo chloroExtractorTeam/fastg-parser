@@ -301,13 +301,13 @@ if (@cyclic_contigs_with_blast_hits == 1)
 
 	    $chloroplast_seq = find_overlap(get_orig_sequence_by_number($lsc), get_orig_sequence_by_number($inverted_repeat."'"));
 	    $chloroplast_seq = find_overlap($chloroplast_seq, get_orig_sequence_by_number($ssc));
-	    $chloroplast_seq = find_overlap($chloroplast_seq, get_orig_sequence_by_number($inverted_repreat));
+	    $chloroplast_seq = find_overlap($chloroplast_seq, get_orig_sequence_by_number($inverted_repeat));
 
 	} else {
 
 	    $chloroplast_seq = find_overlap(get_orig_sequence_by_number($lsc), get_orig_sequence_by_number($inverted_repeat));
 	    $chloroplast_seq = find_overlap($chloroplast_seq, get_orig_sequence_by_number($ssc));
-	    $chloroplast_seq = find_overlap($chloroplast_seq, get_orig_sequence_by_number($inverted_repreat."'"));
+	    $chloroplast_seq = find_overlap($chloroplast_seq, get_orig_sequence_by_number($inverted_repeat."'"));
 
 	}
 
