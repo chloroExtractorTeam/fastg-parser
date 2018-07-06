@@ -298,27 +298,21 @@ if (@cyclic_contigs_with_blast_hits == 1)
 	# 1'-0 we need to find that edge
 	if ($c->has_edge($inverted_repeat, $lsc) || $c->has_edge($lsc, $inverted_repeat."'") || $c->has_edge($lsc."'", $inverted_repeat) || $c->has_edge($lsc."'", $inverted_repeat."'") )
 	{
-	    $chloroplast_seq .= join(" ", get_orig_sequence_by_number($lsc),
-				          get_orig_sequence_by_number($inverted_repeat."'"),
-				          get_orig_sequence_by_number($ssc),
-				          get_orig_sequence_by_number($inverted_repeat)
-		);
+
+	    $chloroplast_seq = find_overlap(get_orig_sequence_by_number($lsc), get_orig_sequence_by_number($inverted_repeat."'"));
+	    $chloroplast_seq = find_overlap($chloroplast_seq, get_orig_sequence_by_number($ssc));
+	    $chloroplast_seq = find_overlap($chloroplast_seq, get_orig_sequence_by_number($inverted_repreat));
+
 	} else {
-	    $chloroplast_seq .= join(" ", get_orig_sequence_by_number($lsc),
-				          get_orig_sequence_by_number($inverted_repeat),
-				          get_orig_sequence_by_number($ssc),
-  	 			          get_orig_sequence_by_number($inverted_repeat."'")
-		);
+
+	    $chloroplast_seq = find_overlap(get_orig_sequence_by_number($lsc), get_orig_sequence_by_number($inverted_repeat));
+	    $chloroplast_seq = find_overlap($chloroplast_seq, get_orig_sequence_by_number($ssc));
+	    $chloroplast_seq = find_overlap($chloroplast_seq, get_orig_sequence_by_number($inverted_repreat."'"));
+
 	}
 
 	if ($chloroplast_seq)
 	{
-	    # delete overlaps between nodes
-	    $chloroplast_seq =~ s/(\S+) \1/$1/g;
-
-	    # delete spaces
-	    $chloroplast_seq =~ s/ //g;
-
 	    # find overlaps between start and end
 	    my $overlap_len = -1;
 	    for (my $i=0; $i<length($chloroplast_seq); $i++)
@@ -458,3 +452,42 @@ sub subgraph {
     $new->add_edges(@edges);
     return $new;
 };
+
+
+sub find_overlap
+{
+    my $strA = shift;
+    my $strB = shift;
+
+    my $assembly = "";
+
+    my $len_overlap = -1;
+
+    my $shorter_seq = length($strA);
+    if (length($strB)<length($strA))
+    {
+	$shorter_seq = length($strB);
+    }
+
+    for(my $i=1; $i<=$shorter_seq; $i++)
+    {
+	if(substr($strA, $i*-1) eq substr($strB, 0, $i))
+	{
+	    $len_overlap = $i;
+	}
+    }
+
+    if ($len_overlap == -1)
+    {
+	warn "No overlap found\n";
+    } else {
+
+	$assembly = $strA;
+	my $overlap = substr($assembly, 0, $len_overlap, "");
+	$assembly .= $strB;
+
+	warn "Found overlap: ", substr($strA, 0, $len_overlap), " resulting sequence: ", $assembly, "\n";
+    }
+
+    return $assembly;
+}
