@@ -479,14 +479,21 @@ sub find_overlap
 
     if ($len_overlap == -1)
     {
-	warn "No overlap found\n";
+	$L->debug("No overlap found");
     } else {
 
 	$assembly = $strA;
 	my $overlap = substr($assembly, 0, $len_overlap, "");
 	$assembly .= $strB;
 
-	warn "Found overlap: ", substr($strA, 0, $len_overlap), " resulting sequence: ", $assembly, "\n";
+	my $seq_short = "";
+	if (length($assembly)>=20)
+	{
+	    $seq_short = substr($assembly, 0, 10).'[...]'.substr($assembly, -10);
+	} else {
+	    $seq_short = $assembly;
+	}
+	$L->info(sprintf("Found overlap: %s with resulting assembly length of %d bp (%s)", $overlap, length($assembly), $seq_short));
     }
 
     return $assembly;
