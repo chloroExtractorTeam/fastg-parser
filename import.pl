@@ -327,7 +327,7 @@ if (@cyclic_contigs_with_blast_hits == 1)
 	    if ($overlap_len != -1)
 	    {
 		my $overlap=substr($chloroplast_seq, 0, $overlap_len, "");
-		$L->info(sprintf("An overlap between start/end detected and removed: length=%d; sequence='%s'", length($overlap_len), $overlap));
+		$L->info(sprintf("An overlap between start/end detected and removed: length=%d; sequence='%s'", length($overlap), $overlap));
 	    } else {
 		$L->info("No overlap between start/end was detected or removed!");
 	    }
