@@ -44,7 +44,7 @@ my $MINSEQLEN = 25000;
 my $MAXSEQLEN = 1000000;
 my $FACTOR4RESCUE = 10;
 
-use version 0.77; our $VERSION = version->declare("v0.6.1");
+use version 0.77; our $VERSION = version->declare("v0.6.2");
 
 our $ID = 'fcg';
 
@@ -294,21 +294,24 @@ if (@cyclic_contigs_with_blast_hits == 1)
 
 	# the order of lsc(0), inverted_repeat(1), ssc(2) is
 	# 0-1,1-2,2-1' or 0-1',1'-2,2-1 but the orientation of the ssc
-	# is guessed due to lack of long reads, but to identify 1-0 or
-	# 1'-0 we need to find that edge
-	if ($c->has_edge($inverted_repeat, $lsc) || $c->has_edge($lsc, $inverted_repeat."'") || $c->has_edge($lsc."'", $inverted_repeat) || $c->has_edge($lsc."'", $inverted_repeat."'") )
+	# is guessed due to lack of long reads, but to identify 0-1 or
+	# 0-1' we need to find that edge
+	if ($c->has_edge($lsc, $inverted_repeat."'") && $c->has_edge($lsc."'", $inverted_repeat."'"))
 	{
 
 	    $chloroplast_seq = find_overlap(get_orig_sequence_by_number($lsc), get_orig_sequence_by_number($inverted_repeat."'"));
 	    $chloroplast_seq = find_overlap($chloroplast_seq, get_orig_sequence_by_number($ssc));
 	    $chloroplast_seq = find_overlap($chloroplast_seq, get_orig_sequence_by_number($inverted_repeat));
 
-	} else {
+	} elsif ($c->has_edge($lsc."'", $inverted_repeat) && $c->has_edge($lsc."'", $inverted_repeat))
+	{
 
 	    $chloroplast_seq = find_overlap(get_orig_sequence_by_number($lsc), get_orig_sequence_by_number($inverted_repeat));
 	    $chloroplast_seq = find_overlap($chloroplast_seq, get_orig_sequence_by_number($ssc));
 	    $chloroplast_seq = find_overlap($chloroplast_seq, get_orig_sequence_by_number($inverted_repeat."'"));
 
+	} else {
+	    $L->info("Should never happen!\n");
 	}
 
 	if ($chloroplast_seq)
@@ -327,7 +330,7 @@ if (@cyclic_contigs_with_blast_hits == 1)
 	    if ($overlap_len != -1)
 	    {
 		my $overlap=substr($chloroplast_seq, 0, $overlap_len, "");
-		$L->info(sprintf("An overlap between start/end detected and removed: length=%d; sequence='%s'", length($overlap_len), $overlap));
+		$L->info(sprintf("An overlap between start/end detected and removed: length=%d; sequence='%s'", length($overlap), $overlap));
 	    } else {
 		$L->info("No overlap between start/end was detected or removed!");
 	    }
@@ -483,7 +486,8 @@ sub find_overlap
     } else {
 
 	$assembly = $strA;
-	my $overlap = substr($assembly, 0, $len_overlap, "");
+	my $save_strB = $strB;
+	my $overlap = substr($save_strB, 0, $len_overlap, "");
 	$assembly .= $strB;
 
 	my $seq_short = "";
