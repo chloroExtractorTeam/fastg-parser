@@ -483,7 +483,8 @@ sub find_overlap
     } else {
 
 	$assembly = $strA;
-	my $overlap = substr($assembly, 0, $len_overlap, "");
+	my $save_strB = $strB;
+	my $overlap = substr($save_strB, 0, $len_overlap, "");
 	$assembly .= $strB;
 
 	my $seq_short = "";
