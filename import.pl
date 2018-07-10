@@ -294,21 +294,24 @@ if (@cyclic_contigs_with_blast_hits == 1)
 
 	# the order of lsc(0), inverted_repeat(1), ssc(2) is
 	# 0-1,1-2,2-1' or 0-1',1'-2,2-1 but the orientation of the ssc
-	# is guessed due to lack of long reads, but to identify 1-0 or
-	# 1'-0 we need to find that edge
-	if ($c->has_edge($inverted_repeat, $lsc) || $c->has_edge($lsc, $inverted_repeat."'") || $c->has_edge($lsc."'", $inverted_repeat) || $c->has_edge($lsc."'", $inverted_repeat."'") )
+	# is guessed due to lack of long reads, but to identify 0-1 or
+	# 0-1' we need to find that edge
+	if ($c->has_edge($lsc, $inverted_repeat."'") && $c->has_edge($lsc."'", $inverted_repeat."'"))
 	{
 
 	    $chloroplast_seq = find_overlap(get_orig_sequence_by_number($lsc), get_orig_sequence_by_number($inverted_repeat."'"));
 	    $chloroplast_seq = find_overlap($chloroplast_seq, get_orig_sequence_by_number($ssc));
 	    $chloroplast_seq = find_overlap($chloroplast_seq, get_orig_sequence_by_number($inverted_repeat));
 
-	} else {
+	} elsif ($c->has_edge($lsc."'", $inverted_repeat) && $c->has_edge($lsc."'", $inverted_repeat))
+	{
 
 	    $chloroplast_seq = find_overlap(get_orig_sequence_by_number($lsc), get_orig_sequence_by_number($inverted_repeat));
 	    $chloroplast_seq = find_overlap($chloroplast_seq, get_orig_sequence_by_number($ssc));
 	    $chloroplast_seq = find_overlap($chloroplast_seq, get_orig_sequence_by_number($inverted_repeat."'"));
 
+	} else {
+	    $L->info("Should never happen!\n");
 	}
 
 	if ($chloroplast_seq)
