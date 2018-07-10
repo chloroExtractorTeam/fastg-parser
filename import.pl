@@ -44,7 +44,7 @@ my $MINSEQLEN = 25000;
 my $MAXSEQLEN = 1000000;
 my $FACTOR4RESCUE = 10;
 
-use version 0.77; our $VERSION = version->declare("v0.6.1");
+use version 0.77; our $VERSION = version->declare("v0.6.2");
 
 our $ID = 'fcg';
 
