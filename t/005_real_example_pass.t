@@ -12,7 +12,7 @@ use Test::Script::Run;
 # prepare run command
 my $input_file = "data/SRR1503755_assembly_graph.fastg";
 my $output_file = "data/005.out";
-my $expected_output_md5 = "7c935e7912d81b63906df17017425cb7";
+my $expected_output_md5 = "72d34a5b7cd49544d30e0e76e74ecf7f";
 
 my @arg = ("-i", $input_file, "-o", $output_file, '-b', 'data/cds.nr98.fa');
 
