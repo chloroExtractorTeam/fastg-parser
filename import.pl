@@ -44,7 +44,7 @@ my $MINSEQLEN = 25000;
 my $MAXSEQLEN = 1000000;
 my $FACTOR4RESCUE = 10;
 
-use version 0.77; our $VERSION = version->declare("v0.6.2");
+use version 0.77; our $VERSION = version->declare("v0.6.3");
 
 our $ID = 'fcg';
 
@@ -488,7 +488,7 @@ sub find_overlap
 	$assembly = $strA;
 	my $save_strB = $strB;
 	my $overlap = substr($save_strB, 0, $len_overlap, "");
-	$assembly .= $strB;
+	$assembly .= $save_strB;
 
 	my $seq_short = "";
 	if (length($assembly)>=20)
@@ -497,7 +497,7 @@ sub find_overlap
 	} else {
 	    $seq_short = $assembly;
 	}
-	$L->info(sprintf("Found overlap: %s with resulting assembly length of %d bp (%s)", $overlap, length($assembly), $seq_short));
+	$L->info(sprintf("Found overlap: %s (%d bp) with resulting assembly length of %d bp (%s)", $overlap, length($overlap), length($assembly), $seq_short));
     }
 
     return $assembly;
