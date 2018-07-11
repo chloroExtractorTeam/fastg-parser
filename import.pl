@@ -497,7 +497,7 @@ sub find_overlap
 	} else {
 	    $seq_short = $assembly;
 	}
-	$L->info(sprintf("Found overlap: %s with resulting assembly length of %d bp (%s)", $overlap, length($assembly), $seq_short));
+	$L->info(sprintf("Found overlap: %s (%d bp) with resulting assembly length of %d bp (%s)", $overlap, length($overlap), length($assembly), $seq_short));
     }
 
     return $assembly;
