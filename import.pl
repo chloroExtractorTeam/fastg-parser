@@ -295,27 +295,30 @@ if (@cyclic_contigs_with_blast_hits == 1)
 	# the order of lsc(0), inverted_repeat(1), ssc(2) is
 	# 0-1,1-2,2-1' or 0-1',1'-2,2-1 but the orientation of the ssc
 	# is guessed due to lack of long reads, but to identify 0-1 or
-	# 0-1' we need to find that edge
-	if ($c->has_edge($lsc, $inverted_repeat."'") && $c->has_edge($lsc."'", $inverted_repeat."'"))
+	# 0-1' we need to find that edge, just use overlap for that:
+	$chloroplast_seq = find_overlap(get_orig_sequence_by_number($lsc), get_orig_sequence_by_number($inverted_repeat));
+	my $final_inverted_repeat = $inverted_repeat."'";
+	unless ($chloroplast_seq)
 	{
-
 	    $chloroplast_seq = find_overlap(get_orig_sequence_by_number($lsc), get_orig_sequence_by_number($inverted_repeat."'"));
-	    $chloroplast_seq = find_overlap($chloroplast_seq, get_orig_sequence_by_number($ssc));
-	    $chloroplast_seq = find_overlap($chloroplast_seq, get_orig_sequence_by_number($inverted_repeat));
-
-	} elsif ($c->has_edge($lsc."'", $inverted_repeat) && $c->has_edge($lsc."'", $inverted_repeat))
-	{
-
-	    $chloroplast_seq = find_overlap(get_orig_sequence_by_number($lsc), get_orig_sequence_by_number($inverted_repeat));
-	    $chloroplast_seq = find_overlap($chloroplast_seq, get_orig_sequence_by_number($ssc));
-	    $chloroplast_seq = find_overlap($chloroplast_seq, get_orig_sequence_by_number($inverted_repeat."'"));
-
-	} else {
-	    $L->info("Should never happen!\n");
+	    $final_inverted_repeat = $inverted_repeat;
 	}
-
-	if ($chloroplast_seq)
+	unless ($chloroplast_seq)
 	{
+	    $chloroplast_seq = find_overlap(get_orig_sequence_by_number($lsc."'"), get_orig_sequence_by_number($inverted_repeat));
+	    $final_inverted_repeat = $inverted_repeat."'";
+	}
+	unless ($chloroplast_seq)
+	{
+	    $chloroplast_seq = find_overlap(get_orig_sequence_by_number($lsc."'"), get_orig_sequence_by_number($inverted_repeat."'"));
+	    $final_inverted_repeat = $inverted_repeat;
+	}
+	$chloroplast_seq = find_overlap($chloroplast_seq, get_orig_sequence_by_number($ssc));
+	$chloroplast_seq = find_overlap($chloroplast_seq, get_orig_sequence_by_number($final_inverted_repeat));
+
+	unless ($chloroplast_seq) {
+	    $L->info("Should never happen to return without a chloroplast sequence!\n");
+	} else {
 	    # find overlaps between start and end
 	    my $overlap_len = -1;
 	    for (my $i=0; $i<length($chloroplast_seq); $i++)
